@@ -1,5 +1,7 @@
 ﻿#if IOS
 using Plugin.Maui.ScreenSecurity.Platforms.iOS;
+#elif MACCATALYST
+using Plugin.Maui.ScreenSecurity.Platforms.MacCatalyst;
 #endif
 
 namespace Plugin.Maui.ScreenSecurity;
