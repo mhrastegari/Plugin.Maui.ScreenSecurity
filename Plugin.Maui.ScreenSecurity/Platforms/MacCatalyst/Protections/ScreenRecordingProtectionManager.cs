@@ -8,30 +8,39 @@ internal class ScreenRecordingProtectionManager
 {
     internal static void HandleScreenRecordingProtection(bool enabled, string withColor = "", UIWindow? window = null)
     {
+        CheckScreenCapture(enabled, withColor, window);
+
         UIScreen.Notifications.ObserveCapturedDidChange((sender, args) =>
         {
-            try
+            CheckScreenCapture(enabled, withColor, window);
+        });
+    }
+
+    private static void CheckScreenCapture(bool enabled, string withColor, UIWindow? window)
+    {
+        try
+        {
+            if (UIScreen.MainScreen.Captured)
             {
-                if (UIScreen.MainScreen.Captured)
-                {
-                    if (enabled)
-                        EnableScreenRecordingProtection(withColor, window);
-                    else
-                        DisableScreenRecordingProtection();
-                }
+                if (enabled)
+                    EnableScreenRecordingProtection(withColor, window);
                 else
                     DisableScreenRecordingProtection();
             }
-            catch (Exception ex)
+            else
             {
-                ErrorsHandler.HandleException(nameof(HandleScreenRecordingProtection), ex);
+                DisableScreenRecordingProtection();
             }
-        });
+        }
+        catch (Exception ex)
+        {
+            ErrorsHandler.HandleException(nameof(CheckScreenCapture), ex);
+        }
     }
 
     private static void EnableScreenRecordingProtection(string withColor = "", UIWindow? window = null)
     {
-        if (!string.IsNullOrEmpty(withColor))
+        if (string.IsNullOrEmpty(withColor) is false)
             ColorProtectionManager.EnableColor(window, withColor);
         else
             BlurProtectionManager.EnableBlur(window, ThemeStyle.Light);
@@ -42,7 +51,6 @@ internal class ScreenRecordingProtectionManager
         DispatchQueue.MainQueue.DispatchAsync(() =>
         {
             BlurProtectionManager.DisableBlur();
-
             ColorProtectionManager.DisableColor();
         });
     }
